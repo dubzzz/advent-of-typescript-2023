@@ -1,0 +1,16 @@
+{
+  "private": "true",
+  "name": "advent-of-typescript-2023",
+  "version": "1.0.0",
+  "description": "Playing with the Advent of TypeScript 2023",
+  "scripts": {
+    "test": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "type-testing": "^0.2.0",
+    "typescript": "^5.3.3"
+  }
+}
