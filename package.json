@@ -4,12 +4,14 @@
   "version": "1.0.0",
   "description": "Playing with the Advent of TypeScript 2023",
   "scripts": {
+    "format": "prettier .",
     "test": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "prettier": "^3.1.1",
     "type-testing": "^0.2.0",
     "typescript": "^5.3.3"
   }
