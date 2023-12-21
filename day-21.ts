@@ -41,10 +41,12 @@ type Edit1D<
   TX,
   TValue extends unknown,
   TNewArray extends unknown[] = [],
-> = TArray extends [infer TArrayLine, ...infer TArrayRest extends unknown[]]
+> = TArray extends [infer TArrayCell, ...infer TArrayRest extends unknown[]]
   ? TNewArray["length"] extends TX
-    ? [...TNewArray, TValue, ...TArrayRest]
-    : Edit1D<TArrayRest, TX, TValue, [...TNewArray, TArrayLine]>
+    ? TArrayCell extends "  "
+      ? [...TNewArray, TValue, ...TArrayRest]
+      : [...TNewArray, TArrayCell, ...TArrayRest]
+    : Edit1D<TArrayRest, TX, TValue, [...TNewArray, TArrayCell]>
   : TNewArray;
 type Edit2D<
   TGrid extends unknown[][],
@@ -95,31 +97,39 @@ type CheckWin<TBoard extends TicTactToeBoard> =
   | CheckWinPlayer<TBoard, "❌">
   | CheckWinPlayer<TBoard, "⭕">;
 type CheckDrawIfNoWin<TBoard extends TicTactToeBoard> =
-  TBoard[number][number] extends TicTacToeChip? "Draw":never;
-type CheckState<TBoard extends TicTactToeBoard> =
-  CheckWin<TBoard> extends never
-    ? CheckDrawIfNoWin<TBoard>
-    : CheckWin<TBoard>;
+  TBoard[number][number] extends TicTacToeChip ? "Draw" : never;
+type CheckState<TBoard extends TicTactToeBoard> = CheckWin<TBoard> extends never
+  ? CheckDrawIfNoWin<TBoard>
+  : CheckWin<TBoard>;
 type AlterGameWithState<TGame extends TicTacToeGame> = CheckState<
   TGame["board"]
 > extends never
   ? TGame
   : { board: TGame["board"]; state: CheckState<TGame["board"]> };
+type CheckBoardChanged<
+  TNewGame extends TicTacToeGame,
+  TOldGame extends TicTacToeGame,
+> = TNewGame["board"] extends TOldGame["board"] ? TOldGame : TNewGame;
 type TicTacToe<
   TGame extends TicTacToeGame,
   TPosition extends TicTacToePositions,
 > = TPosition extends `${infer TPositionY extends
   TicTacToeYPositions}-${infer TPositionX extends TicTacToeXPositions}`
   ? TGame["state"] extends TicTacToeChip
-    ? AlterGameWithState<{
-        board: NextBoard<
-          TGame["board"],
-          TGame["state"],
-          TPositionX,
-          TPositionY
-        >;
-        state: NextPlayer<TGame["state"]>;
-      }>
+    ? AlterGameWithState<
+        CheckBoardChanged<
+          {
+            board: NextBoard<
+              TGame["board"],
+              TGame["state"],
+              TPositionX,
+              TPositionY
+            >;
+            state: NextPlayer<TGame["state"]>;
+          },
+          TGame
+        >
+      >
     : TGame
   : TGame;
 
