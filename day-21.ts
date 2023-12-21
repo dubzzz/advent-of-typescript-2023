@@ -71,13 +71,47 @@ type NextBoard<
   XToLocation<TPositionX>,
   TCurrentPlayer
 >;
+type CheckWinPlayer<
+  TBoard extends TicTactToeBoard,
+  TPlayer extends TicTacToeChip,
+> = TBoard[0][number] extends TPlayer
+  ? `${TPlayer} Won`
+  : TBoard[1][number] extends TPlayer
+    ? `${TPlayer} Won`
+    : TBoard[2][number] extends TPlayer
+      ? `${TPlayer} Won`
+      : TBoard[number][0] extends TPlayer
+        ? `${TPlayer} Won`
+        : TBoard[number][1] extends TPlayer
+          ? `${TPlayer} Won`
+          : TBoard[number][2] extends TPlayer
+            ? `${TPlayer} Won`
+            : TBoard[0][0] | TBoard[1][1] | TBoard[2][2] extends TPlayer
+              ? `${TPlayer} Won`
+              : TBoard[2][0] | TBoard[1][1] | TBoard[0][2] extends TPlayer
+                ? `${TPlayer} Won`
+                : never;
+type CheckWin<TBoard extends TicTactToeBoard> =
+  | CheckWinPlayer<TBoard, "❌">
+  | CheckWinPlayer<TBoard, "⭕">;
+type CheckDrawIfNoWin<TBoard extends TicTactToeBoard> =
+  TBoard[number][number] extends TicTacToeChip? "Draw":never;
+type CheckState<TBoard extends TicTactToeBoard> =
+  CheckWin<TBoard> extends never
+    ? CheckDrawIfNoWin<TBoard>
+    : CheckWin<TBoard>;
+type AlterGameWithState<TGame extends TicTacToeGame> = CheckState<
+  TGame["board"]
+> extends never
+  ? TGame
+  : { board: TGame["board"]; state: CheckState<TGame["board"]> };
 type TicTacToe<
   TGame extends TicTacToeGame,
-  TPosition extends `${TicTacToeYPositions}-${TicTacToeXPositions}`,
+  TPosition extends TicTacToePositions,
 > = TPosition extends `${infer TPositionY extends
   TicTacToeYPositions}-${infer TPositionX extends TicTacToeXPositions}`
   ? TGame["state"] extends TicTacToeChip
-    ? {
+    ? AlterGameWithState<{
         board: NextBoard<
           TGame["board"],
           TGame["state"],
@@ -85,7 +119,7 @@ type TicTacToe<
           TPositionY
         >;
         state: NextPlayer<TGame["state"]>;
-      }
+      }>
     : TGame
   : TGame;
 
@@ -128,6 +162,10 @@ type test_x_win_expected = {
   board: [["⭕", "❌", "  "], ["  ", "❌", "  "], ["⭕", "❌", "  "]];
   state: "❌ Won";
 };
+type PPP = test_x_win_actual["board"][number][number] extends " "
+  ? true
+  : false;
+type PPP2 = CheckDrawIfNoWin<test_x_win_actual["board"]>;
 type test_x_win = Expect<Equal<test_x_win_actual, test_x_win_expected>>;
 
 type type_move5_actual = TicTacToe<test_move4_actual, "bottom-right">;
