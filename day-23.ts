@@ -18,96 +18,27 @@ type NewGame = { board: EmptyBoard; state: "🟡" };
 // My solution:
 type Board = Connect4Cell[][];
 type Game = { board: Board; state: Connect4State };
-type ReadColumn<
-  TBoard extends Board,
-  TColumnIndex extends number,
-  TReadData extends Board[number] = [],
-  TAcc extends string = "",
-> = TReadData["length"] extends TBoard["length"]
-  ? TAcc
-  : ReadColumn<
-      TBoard,
-      TColumnIndex,
-      [...TReadData, TBoard[TReadData["length"]][TColumnIndex]],
-      `${TAcc}${TBoard[TReadData["length"]][TColumnIndex] extends "  "
-        ? " "
-        : TBoard[TReadData["length"]][TColumnIndex] extends "🔴"
-          ? "R"
-          : "Y"}`
-    >;
-type ReadColumns<
-  TBoard extends Board,
-  TAcc extends string[] = [],
-> = TAcc["length"] extends TBoard[0]["length"]
-  ? TAcc
-  : ReadColumns<TBoard, [...TAcc, ReadColumn<TBoard, TAcc["length"]>]>;
-type ColumnToBoard<
-  TColumn extends string,
-  TAcc extends any[] = [],
-> = TColumn extends `${infer TCell}${infer TRest}`
-  ? ColumnToBoard<
-      TRest,
-      [...TAcc, TCell extends "R" ? "🔴" : TCell extends "Y" ? "🟡" : "  "]
-    >
-  : TAcc;
-type ColumnsToBoard<
-  TColumns extends string[],
-  TAcc extends Board = [],
-> = TAcc["length"] extends TColumns[0]["length"]
-  ? TAcc
-  : ColumnsToBoard<
-      TColumns,
-      [...TAcc, ColumnToBoard<TColumns[TAcc["length"]]>]
-    >;
-
-type PPP = ReadColumns<test_move2_expected["board"]>;
-type QQQ = PPP["0"];
-type WWW = ColumnToBoard<QQQ>;
-
-/*type PlayMoveColumn<
-  TBoardColumn extends Board[number],
+type ReadColumnAt<TBoard extends Board, TColumnIndex extends number> = {
+  [K in keyof TBoard]: TBoard[K][TColumnIndex];
+};
+type PlayInColumn<
+  TColumn extends Connect4Cell[],
   TChip extends Connect4Chips,
-  TNewBoardColumn extends Board[number] = [],
-> = TNewBoardColumn["length"] extends TBoardColumn["length"]
-  ? TNewBoardColumn
-  : TBoardColumn[TNewBoardColumn["length"]] extends "  "
-    ? TBoardColumn[[...TNewBoardColumn, []]["length"]] extends Connect4Chips // followed by another chip
-      ? PlayMoveColumn<TBoardColumn, TChip, [...TNewBoardColumn, TChip]>
-      : [...TNewBoardColumn, []]["length"] extends TBoardColumn["length"] // first chip
-        ? PlayMoveColumn<TBoardColumn, TChip, [...TNewBoardColumn, TChip]>
-        : PlayMoveColumn<
-            TBoardColumn,
-            TChip,
-            [...TNewBoardColumn, TBoardColumn[TNewBoardColumn["length"]]]
-          >
-    : PlayMoveColumn<
-        TBoardColumn,
-        TChip,
-        [...TNewBoardColumn, TBoardColumn[TNewBoardColumn["length"]]]
-      >;
-type PlayMove<
-  TTransposedBoard extends Board,
-  TChip extends Connect4Chips,
-  TColumnIndex extends number,
-  TNewTransposedBoard extends Board = [],
-> = TNewTransposedBoard["length"] extends TTransposedBoard["length"]
-  ? TNewTransposedBoard
-  : TNewTransposedBoard["length"] extends TColumnIndex
-    ? PlayMove<
-        TTransposedBoard,
-        TChip,
-        TColumnIndex,
-        [
-          ...TNewTransposedBoard,
-          PlayMoveColumn<TTransposedBoard[TColumnIndex], TChip>,
-        ]
-      >
-    : PlayMove<
-        TTransposedBoard,
-        TChip,
-        TColumnIndex,
-        [...TNewTransposedBoard, TTransposedBoard[TColumnIndex]]
-      >;*/
+  TAcc extends Connect4Cell[] = [],
+> = TColumn extends [...infer TRest extends Connect4Cell[], "  "]
+  ? [...TRest, TChip]
+  : TColumn extends ["  ", ...infer TEnd extends Connect4Cell[]]
+    ? TEnd extends ["  ", ...infer TEnd2 extends Connect4Cell[]]
+      ? PlayInColumn<TEnd, TChip, [...TAcc, "  "]>
+      : TEnd extends [
+            infer TOther extends Connect4Chips,
+            ...infer TEnd2 extends Connect4Cell[],
+          ]
+        ? [...TAcc, TChip, TOther, ...TEnd2]
+        : TColumn
+    : TColumn;
+type PPP = ReadColumnAt<test_move1_expected["board"], 0>;
+type QQQ = PlayInColumn<PPP, "🔴">;
 type Connect4<TGame extends Game, TColumn extends number> = TGame extends {
   board: infer TBoard extends Board;
   state: infer TChip extends Connect4Chips;
