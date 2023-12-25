@@ -57,21 +57,18 @@ type ReplaceColumnAt<
     ? ReplaceColumnAtElement<TBoard[TY], TColumnIndex, TNewColumn[TY]>
     : TBoard[TY];
 };
-type PPP = ReadColumnAt<test_move1_expected["board"], 0>;
-type QQQ = PlayInColumn<
-  PlayInColumn<PlayInColumn<PlayInColumn<PPP, "🔴">, "🔴">, "🔴">,
-  "🔴"
->;
-
-type ZZZ = ReplaceColumnAt<test_move1_expected["board"], 0, QQQ>;
 type Connect4<TGame extends Game, TColumn extends number> = TGame extends {
   board: infer TBoard extends Board;
   state: infer TChip extends Connect4Chips;
 }
-  ? unknown /*{
-      board: Transpose<PlayMove<Transpose<TBoard>, TChip, TColumn>>;
+  ? {
+      board: ReplaceColumnAt<
+        TBoard,
+        TColumn,
+        PlayInColumn<ReadColumnAt<TBoard, TColumn>, TChip>
+      >;
       state: TChip extends "🔴" ? "🟡" : "🔴";
-    }*/
+    }
   : TGame;
 
 // Tests:
