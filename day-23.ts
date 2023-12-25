@@ -42,7 +42,11 @@ type ReplaceColumnAtElement<
   TColumnIndex extends number,
   TNewCell extends Connect4Cell,
 > = {
-  [TX in keyof TRow]: TX extends TColumnIndex ? TNewCell : TRow[TX];
+  [TX in keyof TRow]: TX extends `${infer TXN extends number}`
+    ? TXN extends TColumnIndex
+      ? TNewCell
+      : TRow[TX]
+    : TRow[TX];
 };
 type ReplaceColumnAt<
   TBoard extends Board,
@@ -54,7 +58,11 @@ type ReplaceColumnAt<
     : TBoard[TY];
 };
 type PPP = ReadColumnAt<test_move1_expected["board"], 0>;
-type QQQ = PlayInColumn<PlayInColumn<PlayInColumn<PPP, "🔴">, "🔴">, "🔴">;
+type QQQ = PlayInColumn<
+  PlayInColumn<PlayInColumn<PlayInColumn<PPP, "🔴">, "🔴">, "🔴">,
+  "🔴"
+>;
+
 type ZZZ = ReplaceColumnAt<test_move1_expected["board"], 0, QQQ>;
 type Connect4<TGame extends Game, TColumn extends number> = TGame extends {
   board: infer TBoard extends Board;
