@@ -5,7 +5,7 @@
   "description": "Playing with the Advent of TypeScript 2023",
   "scripts": {
     "format": "prettier .",
-    "test": "tsc --noEmit"
+    "test": "tsc --noEmit day-*.ts"
   },
   "keywords": [],
   "author": "",
