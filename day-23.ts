@@ -73,12 +73,39 @@ type CheckColumnWinFor<TBoard extends Board, TChip extends Connect4Chips> = {
 type CheckRowWinFor<TBoard extends Board, TChip extends Connect4Chips> = {
   [K in keyof TBoard]: CheckOneArrayWinFor<TBoard[K], TChip>;
 }[keyof TBoard];
+type ExpandDiagLeft<
+  TBoard extends Board,
+  TSpacer extends Board[number] = [],
+  TAcc extends Board = [],
+> = TAcc["length"] extends TBoard["length"]
+  ? TAcc
+  : ExpandDiagLeft<
+      TBoard,
+      [...TSpacer, "  "],
+      [...TAcc, [...TSpacer, ...TBoard[TAcc["length"]]]]
+    >;
+type CheckDiagLeftWinFor<
+  TBoard extends Board,
+  TChip extends Connect4Chips,
+> = CheckColumnWinFor<ExpandDiagLeft<TBoard>, TChip>;
+type Reverse<
+  TBoard extends Board,
+  TAcc extends Board = [],
+> = TAcc["length"] extends TBoard["length"]
+  ? TAcc
+  : Reverse<TBoard, [TBoard[TAcc["length"]], ...TAcc]>;
+type CheckDiagRightWinFor<
+  TBoard extends Board,
+  TChip extends Connect4Chips,
+> = CheckDiagLeftWinFor<Reverse<TBoard>, TChip>;
 type CheckWinFor<
   TBoard extends Board,
   TChip extends Connect4Chips,
 > = true extends
   | CheckColumnWinFor<TBoard, TChip>
   | CheckRowWinFor<TBoard, TChip>
+  | CheckDiagLeftWinFor<TBoard, TChip>
+  | CheckDiagRightWinFor<TBoard, TChip>
   ? TChip
   : never;
 type EditEndState<TGame extends Game> = "🔴" extends CheckWinFor<
