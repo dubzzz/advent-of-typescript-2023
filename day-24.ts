@@ -31,6 +31,11 @@ type MoveLeft<TMaze extends MazeMatrix> = {
 type ReadColumnAt<TMaze extends unknown[][], TColumnIndex extends number> = {
   [K in keyof TMaze]: TMaze[K][TColumnIndex];
 };
+type Rev<TT extends unknown, TAcc extends unknown[] = []> = TT extends unknown[]
+  ? TAcc["length"] extends TT["length"]
+    ? TAcc
+    : Rev<TT, [TT[TAcc["length"]], ...TAcc]>
+  : never;
 type Rotate90<
   TMaze extends unknown,
   TAcc extends unknown[] = [],
@@ -38,6 +43,22 @@ type Rotate90<
   ? TAcc["length"] extends TMaze[number]["length"]
     ? TAcc
     : Rotate90<TMaze, [ReadColumnAt<TMaze, TAcc["length"]>, ...TAcc]>
+  : never;
+type Rotate180<
+  TMaze extends unknown,
+  TAcc extends unknown[] = [],
+> = TMaze extends unknown[][]
+  ? TAcc["length"] extends TMaze["length"]
+    ? TAcc
+    : Rotate180<TMaze, [Rev<TMaze[TAcc["length"]]>, ...TAcc]>
+  : never;
+type Rotate270<
+  TMaze extends unknown,
+  TAcc extends unknown[] = [],
+> = TMaze extends unknown[][]
+  ? TAcc["length"] extends TMaze[number]["length"]
+    ? TAcc
+    : Rotate270<TMaze, [...TAcc, Rev<ReadColumnAt<TMaze, TAcc["length"]>>]>
   : never;
 type VictoryMazeRow<TMaze extends MazeMatrix[number]> = {
   [K in keyof TMaze]: DELICIOUS_COOKIES;
@@ -53,9 +74,9 @@ type HandleEnd<TMaze extends unknown> = TMaze extends MazeMatrix
 type Move<TMaze extends MazeMatrix, TDirection extends Directions> = HandleEnd<
   {
     left: MoveLeft<TMaze>;
-    right: Rotate90<Rotate90<MoveLeft<Rotate90<Rotate90<TMaze>>>>>;
-    up: Rotate90<Rotate90<Rotate90<MoveLeft<Rotate90<TMaze>>>>>;
-    down: Rotate90<MoveLeft<Rotate90<Rotate90<Rotate90<TMaze>>>>>;
+    right: Rotate180<MoveLeft<Rotate180<TMaze>>>;
+    up: Rotate270<MoveLeft<Rotate90<TMaze>>>;
+    down: Rotate90<MoveLeft<Rotate270<TMaze>>>;
   }[TDirection]
 >;
 
