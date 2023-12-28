@@ -10,20 +10,23 @@ type Directions = "up" | "down" | "left" | "right";
 
 // My solution:
 type MoveLeftInRow<TMazeRow extends MazeMatrix[number]> = TMazeRow extends [
+  "  ",
   "🎅",
   ...infer TRest extends MazeMatrix[number],
 ]
-  ? ["  ", ...TRest]
-  : TMazeRow extends ["  ", "🎅", ...infer TRest extends MazeMatrix[number]]
-    ? ["🎅", "  ", ...TRest]
-    : TMazeRow extends [
-          infer TFirst extends MazeItem,
-          ...infer TRest extends MazeMatrix[number],
-        ]
-      ? [TFirst, ...MoveLeftInRow<TRest>]
-      : TMazeRow;
+  ? ["🎅", "  ", ...TRest]
+  : TMazeRow extends [
+        infer TFirst extends MazeItem,
+        ...infer TRest extends MazeMatrix[number],
+      ]
+    ? [TFirst, ...MoveLeftInRow<TRest>]
+    : TMazeRow;
+type MoveLeftInRowWithOut<TMazeRow extends MazeMatrix[number]> =
+  TMazeRow extends ["🎅", ...infer TRest extends MazeMatrix[number]]
+    ? ["  ", ...TRest]
+    : MoveLeftInRow<TMazeRow>;
 type MoveLeft<TMaze extends MazeMatrix> = {
-  [K in keyof TMaze]: MoveLeftInRow<TMaze[K]>;
+  [K in keyof TMaze]: MoveLeftInRowWithOut<TMaze[K]>;
 };
 type ReadColumnAt<TMaze extends unknown[][], TColumnIndex extends number> = {
   [K in keyof TMaze]: TMaze[K][TColumnIndex];
@@ -110,6 +113,9 @@ type test_maze1_down = Expect<Equal<test_maze1_down_actual, Maze2>>;
 
 // can't move left!
 type test_maze2_left_actual = Move<Maze2, "left">;
+type PPP = MoveLeftInRow<
+  ["🎄", "🎄", "🎄", "🎄", "  ", "🎄", "🎅", "🎄", "  ", "🎄"]
+>;
 //   ^?
 type test_maze2_left = Expect<Equal<test_maze2_left_actual, Maze2>>;
 
